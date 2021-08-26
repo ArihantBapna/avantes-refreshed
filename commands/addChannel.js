@@ -13,21 +13,21 @@ module.exports = {
     async execute(interaction) {
         // Execute only if the message sent was in a server
         if(interaction.inGuild()){
-            var member = interaction.member;
+            let member = interaction.member;
 
             // Confirm that the person executing is an admin
             if(member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)){
 
-                var name = interaction.options.getString('channel_name');
+                let name = interaction.options.getString('channel_name');
 
-                var lastChn = await channelModel.findOne({}).sort({id: -1});
-                var count = 0;
+                let lastChn = await channelModel.findOne({}).sort({id: -1});
+                let count = 0;
 
                 if(!lastChn) count = 1;
                 else count = lastChn.id + 1;
 
                 // Create channel object
-                var chn = {
+                let chn = {
                     _id: mongoose.Types.ObjectId(),
                     id: count,
                     cid: interaction.channelId,
@@ -37,14 +37,14 @@ module.exports = {
                 }
 
                 // Check if another channel exists in the db with the same name
-                var sameName = await channelModel.findOne({name: name});
+                let sameName = await channelModel.findOne({name: name});
                 if(sameName){
                     await interaction.reply('That name already exists in our databases. Please pick a different name');
                     return;
                 }
 
                 // Check if another channel exists in the db with the same id
-                var sameCid = await channelModel.findOne({cid: interaction.channelId, sid: interaction.guildId});
+                let sameCid = await channelModel.findOne({cid: interaction.channelId, sid: interaction.guildId});
                 if(sameCid){
                     await interaction.reply('That channel from this server has already been added to the server as ' +sameCid.name);
                     return;

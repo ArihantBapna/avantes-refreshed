@@ -1,7 +1,5 @@
 // If local development env, add .env
 require('dotenv').config();
-// Path initialization
-const path = require('path');
 
 // File reader
 const fs = require('fs');
@@ -11,9 +9,6 @@ const { Client, Collection, Intents } = require('discord.js');
 
 // Create a new client instance
 const client = new Client({
-    commandPrefix: process.env.COMMAND_PREFIX, // Set the command prefix to +
-    owner: process.env.MASTER_USER, // Set @Ari#6713 as the bot owner
-    disableEveryone: true, // Don't allow the bot to ping @everyone
     intents: [Intents.FLAGS.GUILDS] // Set server flags
 });
 
@@ -55,16 +50,16 @@ client.on('guildCreate', async guild => {
     guild.systemChannel.send('Hi! I\'m Avantes. Add channels to the server to allow your members to send anonymous messages.');
 
     //Find last server in database
-    var lastSrv = await serverModel.findOne({}).sort({id: -1});
+    let lastSrv = await serverModel.findOne({}).sort({id: -1});
 
-    var count = 0;
+    let count;
 
     // If a last server exists, set id to that +1, if it doesn't then set id to 1
     if(!lastSrv) count = 1;
     else count = lastSrv.id + 1;
 
     // Create a new server object
-    var srv = {
+    let srv = {
         _id: mongoose.Types.ObjectId(),
         id: count,
         sid: guild.id,
@@ -94,7 +89,7 @@ client.on('guildDelete', async guild => {
 
     // Remove the server from the database
     await serverModel.deleteOne({sid: guild.id});
-    
+
     // Remove all the channels from the database
     await channelModel.deleteMany({sid: guild.id});
 
