@@ -23,12 +23,21 @@ module.exports = {
                 if(existChn){
                     // Delete the channel from the database
                     await channelModel.deleteOne({cid: cid});
-                    interaction.reply('Successfully removed this channel to be accessible anonymously');
+                    await interaction.reply('Successfully removed this channel to be accessible anonymously');
                 }else{
                     // If it doesn't exist in the database
-                    interaction.reply('This channel has not been added yet.');
+                    await interaction.reply('This channel has not been added yet.');
                 }
+
+            }else{
+                // If the user is not a server admin
+                await interaction.reply('You don\'t have the required permissions for this command. Contact a server admin');
             }
+
+
+        }else{
+            // If the user direct messages
+            await interaction.reply('This command must be used in a server');
         }
     }
 }
