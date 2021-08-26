@@ -1,3 +1,8 @@
+/*
+ * Run this file before you start your bot the first time and also after you make any changes to the commands.
+ * It will refresh the application slash commands
+ */
+
 const { REST }  = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 

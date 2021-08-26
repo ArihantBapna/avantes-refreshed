@@ -49,6 +49,10 @@ client.on('guildCreate', async guild => {
     // Send initial message
     guild.systemChannel.send('Hi! I\'m Avantes. Add channels to the server to allow your members to send anonymous messages.');
 
+    console.log(guild);
+    let guildId = guild.id
+    console.log(guildId);
+
     //Find last server in database
     let lastSrv = await serverModel.findOne({}).sort({id: -1});
 
@@ -62,7 +66,7 @@ client.on('guildCreate', async guild => {
     let srv = {
         _id: mongoose.Types.ObjectId(),
         id: count,
-        sid: guild.id,
+        sid: guildId,
         name: guild.name
     };
 
