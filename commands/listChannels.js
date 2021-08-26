@@ -1,7 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { Permissions } = require('discord.js');
 
-const mongoose = require("mongoose");
 const channelModel = require('../models/channels');
 const serverModel = require('../models/servers');
 
@@ -16,6 +14,12 @@ module.exports = {
         // Check if a server with that name exists in the db
         let srv = await serverModel.findOne({name: srvName});
 
+        // Return if such a server doesn't exist in the database
+        if(!srv){
+            await interaction.reply('Could not find a server with that name');
+            return;
+        }
+
         let client = interaction.client;
         let userId = interaction.user.id;
 
@@ -24,13 +28,13 @@ module.exports = {
 
         // Return if the server doesn't exist anymore
         if(!selGuild){
-            interaction.reply('That server no longer exists on discord');
+            await interaction.reply('That server no longer exists on discord');
             return;
         }
 
         // Return if the server is currently unavailable
         if(!selGuild.available){
-            interaction.reply('That server is currently unavailable (Server down)');
+            await interaction.reply('That server is currently unavailable (Server down)');
             return;
         }
 
@@ -39,7 +43,7 @@ module.exports = {
 
         // Return if the user doesn't exist
         if(!userExists){
-            interaction.reply('You are not a part of that server.');
+            await interaction.reply('You are not a part of that server.');
             return;
         }
 
@@ -54,9 +58,9 @@ module.exports = {
             srvChn.forEach((chn) => {
                 replyString += (chn.name +': ' +chn.desc +'\n');
             });
-            interaction.reply(replyString);
+            await interaction.reply(replyString);
         }else{
-            interaction.reply('Could not find any added channels for that server');
+            await interaction.reply('Could not find any added channels for that server');
         }
 
 
