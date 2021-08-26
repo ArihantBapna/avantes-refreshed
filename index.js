@@ -3,8 +3,11 @@ require('dotenv').config();
 // Path initialization
 const path = require('path');
 
+// File reader
+const fs = require('fs');
+
 // Discord initialization
-const { Client, Intents } = require('discord.js');
+const { Client, Collection, Intents } = require('discord.js');
 
 // Create a new client instance
 const client = new Client({
@@ -14,6 +17,18 @@ const client = new Client({
     intents: [Intents.FLAGS.GUILDS] // Set server flags
 });
 
+// Create a commands collection
+client.commands = new Collection();
+// Get all the command files from inside commands folder
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    // Set a new item in the Collection
+    // With the key as the command name and the value as the exported module
+    client.commands.set(command.data.name, command);
+}
+
 // Mongoose initialization
 const mongoose = require('mongoose');
 mongoose.connect(process.env.CONNECTION_URL, {useNewUrlParser: true, useUnifiedTopology: true});
@@ -21,7 +36,9 @@ mongoose.connect(process.env.CONNECTION_URL, {useNewUrlParser: true, useUnifiedT
 // Get the avantes-db connection
 const db = mongoose.connection;
 
+// Load mongoose models
 const serverModel = require('./models/servers');
+const channelModel = require('./models/channels');
 
 // Bind connection to error event
 db.on('error', console.error.bind(console,'MongoDB connection error'));
@@ -43,11 +60,8 @@ client.on('guildCreate', async guild => {
     var count = 0;
 
     // If a last server exists, set id to that +1, if it doesn't then set id to 1
-    if(!lastSrv){
-        count = 1;
-    }else{
-        count = lastSrv.id + 1;
-    }
+    if(!lastSrv) count = 1;
+    else count = lastSrv.id + 1;
 
     // Create a new server object
     var srv = {
@@ -61,13 +75,28 @@ client.on('guildCreate', async guild => {
     await serverModel.create(srv);
 });
 
+client.on('interactionCreate', async interaction => {
+   if(!interaction.isCommand()) return;
+   const command = client.commands.get(interaction.commandName);
+
+   if(!command) return;
+   try{
+       await command.execute(interaction);
+   }catch(error){
+       console.error(error);
+       await interaction.reply({content: 'There was an error while executing this command!', ephemeral: true});
+   }
+
+});
+
 // On bot leave server (Kicked / Banned)
 client.on('guildDelete', async guild => {
 
     // Remove the server from the database
     await serverModel.deleteOne({sid: guild.id});
-
-    // TODO: Remove all channels with that sid
+    
+    // Remove all the channels from the database
+    await channelModel.deleteMany({sid: guild.id});
 
     console.log(guild.name +' has removed me.')
 });
